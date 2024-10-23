@@ -17,7 +17,8 @@ defmodule PgRequestReply.Server do
   def init(opts) do
     channel = Keyword.fetch!(opts, :channel)
     test_pid = Keyword.get(opts, :test_pid)
-    {:ok, %{channel: channel, test_pid: test_pid}, {:continue, :connect}}
+    handle_fn = Keyword.get(opts, :handle_fn, &default_fn/1)
+    {:ok, %{channel: channel, test_pid: test_pid, handle_fn: handle_fn}, {:continue, :connect}}
   end
 
   @impl true
@@ -39,15 +40,15 @@ defmodule PgRequestReply.Server do
   @impl true
   def handle_info({:notification, _pid, _ref, channel, payload}, state) when channel == state.channel do
     with {:ok, id} <- parse_notification(payload),
-         {:ok, _} <- handle_notification(id) do
+         {:ok, _} <- handle_notification(id, state.handle_fn) do
       {:noreply, state}
     end
   end
 
-  defp handle_notification(id) do
+  defp handle_notification(id, handle_fn) do
     Repo.transaction(fn ->
       with {:ok, request} <- fetch_request(id),
-           {:ok, response} <- process_request(request),
+           {:ok, response} <- process_request(request, handle_fn),
            :ok <- update_response(id, response) do
         :ok
       else
@@ -87,10 +88,31 @@ defmodule PgRequestReply.Server do
     end
   end
 
-  defp process_request(request) do
-    Logger.info("Processed request: #{inspect(request)}")
-    # Implement your request processing logic here
-    {:ok, "Processed: #{request}"}
+  defp process_request(request, handle_fn) do
+    Logger.info("Processing request: #{inspect(request)}")
+    handle_fn.(request)
+  end
+
+  defp default_fn(request) do
+    Logger.info("Using default function to process request: #{inspect(request)}")
+
+    case Req.post("https://api.openai.com/v1/embeddings",
+           json: %{
+             model: "text-embedding-ada-002",
+             input: request
+           },
+           headers: [
+             {"Authorization", "Bearer #{Application.get_env(:pg_request_reply, :open_ai_api_key)}"},
+             {"Content-Type", "application/json"}
+           ]
+         ) do
+      {:ok, %{body: %{"data" => [%{"embedding" => embedding}]}}} ->
+        {:ok, Jason.encode!(embedding)}
+
+      {:error, error} ->
+        Logger.error("Error getting embeddings: #{inspect(error)}")
+        {:error, "Failed to get embeddings"}
+    end
   end
 
   @update_response """

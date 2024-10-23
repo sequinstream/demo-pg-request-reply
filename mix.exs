@@ -25,6 +25,7 @@ defmodule PgRequestReply.MixProject do
     [
       {:ecto_sql, "~> 3.0"},
       {:postgrex, "~> 0.18.0"},
+      {:req, "~> 0.5.0"},
       {:styler, "~> 1.0.0-rc.1", only: [:dev, :test], runtime: false}
     ]
   end

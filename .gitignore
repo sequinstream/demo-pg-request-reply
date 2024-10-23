@@ -24,3 +24,5 @@ pg_request_reply-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+config/dev.secret.exs

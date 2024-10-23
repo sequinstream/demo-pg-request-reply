@@ -6,7 +6,8 @@ config :pg_request_reply, PgRequestReply.Repo,
   password: "postgres",
   hostname: "localhost",
   port: 5432,
-  pool_size: 10
+  pool_size: 10,
+  log: false
 
 config :pg_request_reply,
   ecto_repos: [PgRequestReply.Repo]

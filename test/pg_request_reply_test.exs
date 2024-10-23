@@ -6,9 +6,16 @@ defmodule PgRequestReplyTest do
 
   @channel "test_channel"
   setup do
+    test_pid = self()
+
+    handle_fn = fn request ->
+      send(test_pid, :handled)
+      {:ok, "Processed: #{request}"}
+    end
+
     # Start the Server (handler) process
     Repo.query("delete from request_reply")
-    _pid = start_supervised!({Server, [channel: @channel, test_pid: self()]})
+    _pid = start_supervised!({Server, [channel: @channel, test_pid: self(), handle_fn: handle_fn]})
     assert_receive {Server, :started}, 1000
 
     on_exit(fn ->
@@ -26,6 +33,7 @@ defmodule PgRequestReplyTest do
     {:ok, %{rows: [[request_id]]}} = Repo.query("SELECT request($1, $2)", [@channel, request])
     {:ok, %{rows: [[result]]}} = Repo.query("SELECT await_reply($1)", [request_id])
 
+    assert_receive :handled, 1000
     assert result == expected_response
   end
 

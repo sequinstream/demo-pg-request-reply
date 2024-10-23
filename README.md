@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This proof-of-concept does **not** demo [Sequin](github.com/sequinstream/sequin), just some fun Postgres features.
+
 # `demo-pg-request-reply`
 
 `demo-pg-request-reply` is a proof-of-concept implementation of a request-reply mechanism using Postgres. It's an implementation of the method described in [this blog post](#).

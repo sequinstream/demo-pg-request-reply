@@ -15,7 +15,7 @@ defmodule PgRequestReply.Application do
       else
         [
           PgRequestReply.Repo,
-          PgRequestReply.Server
+          {PgRequestReply.Server, [channel: "embeddings"]}
         ]
       end
 
