@@ -3,7 +3,7 @@
 
 # `demo-pg-request-reply`
 
-`demo-pg-request-reply` is a proof-of-concept implementation of a request-reply mechanism using Postgres. It's an implementation of the method described in [this blog post](#).
+`demo-pg-request-reply` is a proof-of-concept implementation of a request-reply mechanism using Postgres. It's an implementation of the method described in [this blog post](https://blog.sequinstream.com/request-reply-in-postgres/).
 
 If you've ever wanted to see all the Postgres goodies come together in one use case, you've come to the right place!
 
